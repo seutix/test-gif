@@ -2,19 +2,50 @@
   "name": "motion-lab-editor",
   "version": "1.0.0",
   "private": true,
+  "description": "KADR Motion Lab Editor",
+  "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "vite build"
+    "check": "vite build",
+    "desktop:build": "npm run build && electron-builder --win portable"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
+    "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest"
+    "vite": "latest"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "com.kadr.motionlab",
+    "productName": "КАДР Motion Lab",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "KADR-Motion-Lab-Portable-${version}.exe"
+    }
+  }
 }
