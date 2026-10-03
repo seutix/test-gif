@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Upload, Settings2, Play, Sparkles, ChevronDown, Undo2, Redo2, Plus, Image, Video, SlidersHorizontal, Download, ArrowLeft, ArrowRight, MoreHorizontal, X, Check, Clock3, WandSparkles } from 'lucide-react';
+import { Upload, Settings2, Play, Sparkles, ChevronDown, Undo2, Redo2, Plus, Image, Video, SlidersHorizontal, Download, ArrowLeft, ArrowRight, MoreHorizontal, Check, Clock3, WandSparkles } from 'lucide-react';
 import './style.css';
 
 const starterFrames = [];
@@ -99,7 +99,7 @@ function App() {
 
   const moveByDrag = (targetId) => {
     if (!draggedId || draggedId === targetId) return;
-    setFrames((previous) => {
+    changeFrames((previous) => {
       const source = previous.findIndex((frame) => frame.id === draggedId);
       const target = previous.findIndex((frame) => frame.id === targetId);
       const next = [...previous];
@@ -124,7 +124,7 @@ function App() {
     <input ref={picker} className="file-picker" type="file" accept="image/*,video/mp4,image/gif" multiple onChange={addFiles} />
     <header className="topbar">
       <div className="brand"><span className="brand-mark">K</span><span>КАДР</span><i /><small>новый проект</small></div>
-      <nav><button className="nav-active" onClick={() => { setActiveTool("frames"); notify("Режим монтажа"); }}>Монтаж</button><button onClick={() => { setActiveTool("timing"); notify("Выберите кадр и настройте длительность справа"); }}>Улучшение</button><button onClick={() => exportProject()}>Экспорт</button></nav>
+      <nav><button className="nav-active" onClick={() => { setActiveTool("frames"); notify("Режим монтажа"); }}>Монтаж</button><button onClick={() => { setQuality((v) => !v); notify("Плавное движение переключено"); }}>Улучшение</button><button onClick={() => exportProject()}>Экспорт</button></nav>
       <div className="head-actions"><button className="icon-btn" title="Отменить" onClick={undo} disabled={!history.length}><Undo2 size={17} /></button><button className="icon-btn" title="Повторить" onClick={redo} disabled={!future.length}><Redo2 size={17} /></button><button className="settings" onClick={() => setSettingsOpen(!settingsOpen)}><Settings2 size={16} /> Настройки</button><button className="export" onClick={exportProject}><Download size={16} /> Сохранить проект</button></div>
     </header>
     <section className="workspace">
