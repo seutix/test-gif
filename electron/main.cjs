@@ -17,7 +17,9 @@ function runFfmpeg(args) {
 }
 
 ipcMain.handle('export-media', async (_event, payload) => {
-  const format = payload?.format === 'GIF' ? 'GIF' : 'MP4';
+  const format = 'GIF';
+  const fps = Math.max(1, Math.min(60, Number(payload?.fps) || 12));
+  const quality = payload?.quality || 'high';
   const frames = Array.isArray(payload?.frames) ? payload.frames : [];
   if (!frames.length) return { ok:false, error:'Нет кадров для экспорта' };
   const ext = format.toLowerCase();
@@ -38,8 +40,8 @@ ipcMain.handle('export-media', async (_event, payload) => {
     fs.writeFileSync(concat, lines.join('\n'));
     if (format === 'GIF') {
       const palette = path.join(dir, 'palette.png');
-      await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-vf','fps=20,scale=1280:-1:flags=lanczos,palettegen=stats_mode=diff',palette]);
-      await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-i',palette,'-lavfi','fps=20,scale=1280:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=sierra2_4a','-loop','0',picked.filePath]);
+      await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-vf',`fps=${fps},scale=1280:-1:flags=lanczos,palettegen=max_colors=${quality === 'small' ? 128 : 256}:stats_mode=diff`,palette]);
+      await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-i',palette,'-lavfi',`fps=${fps},scale=1280:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=sierra2_4a`,'-loop','0',picked.filePath]);
     } else {
       await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-vf','fps=30,format=yuv420p','-movflags','+faststart','-c:v','libx264',picked.filePath]);
     }
