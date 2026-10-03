@@ -213,7 +213,7 @@ function App() {
         <div className={`stage-wrap ${checker?'checker':''}`} ref={stageRef}>
           {selected ? <div className="stage" style={{transform:`scale(${zoom/100})`}}>
             {onion && frames.length > 1 && <div className="onion" style={{backgroundImage:`url(${frames[Math.max(0,frames.findIndex(f=>f.id===selected.id)-1)]?.url})`}}/>}
-            <div className="canvas-image" style={{backgroundImage:`url(${selected.url})`,backgroundSize:fit,opacity:selected.opacity,transform:`rotate(${selected.rotation||0}deg) scaleX(${selected.flipX?-1:1}) scaleY(${selected.flipY?-1:1})`)}}/>
+            <div className="canvas-image" style={{ backgroundImage: `url(${selected.url})`, backgroundSize: fit, opacity: selected.opacity, transform: `rotate(${selected.rotation || 0}deg) scaleX(${selected.flipX ? -1 : 1}) scaleY(${selected.flipY ? -1 : 1})` }} />
             <div className="stage-hud"><span>Кадр {frames.findIndex(f=>f.id===selected.id)+1} / {frames.length}</span><span>{total.toFixed(2)} сек</span></div>
           </div> : <button className="empty-stage" onClick={()=>picker.current?.click()}><Upload size={30}/><b>Создайте первый кадр</b><span>Перетащите изображения сюда</span></button>}
         </div>
