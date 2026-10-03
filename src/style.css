@@ -12,3 +12,4 @@
 .settings-popover span{font-size:10px;color:#7b857b}
 .settings-popover button{align-self:flex-end;background:#edf4e7;border-radius:5px;padding:6px 10px;font-size:10px;color:#567c32;font-weight:700}
 .zoom button{font-size:14px;color:#778176;padding:2px 5px}
+.bulk-note{background:#eef4e9;border:1px solid #dbe8d0;border-radius:7px;padding:9px 10px;margin:-4px 0 16px;font-size:9px;line-height:1.45;color:#647360}.danger-btn{border-color:#e6caca!important;color:#a35b5b!important}.media-list{width:100%;text-align:left;cursor:pointer}.media-list:hover{background:#f2f6ef}.frame.active{background:#eaf4dc}
