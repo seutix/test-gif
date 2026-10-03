@@ -154,7 +154,7 @@ function App() {
 
   const exportGif = async () => {
     if (!frames.length) { notify('Добавьте кадры'); return; }
-    if (!window.kadr?.exportMedia) { notify('Откройте Windows-приложение для экспорта GIF'); return; }
+    if (!window.kadr?.exportMedia) { notify('Экспорт доступен в установленном Windows-приложении'); return; }
     const snapshots = [];
     for (const frame of frames) {
       const canvas = document.createElement('canvas'); canvas.width = 1280; canvas.height = 720;
@@ -176,7 +176,7 @@ function App() {
     }
     notify('Рендер GIF…');
     const result = await window.kadr.exportMedia({ format: 'GIF', frames: snapshots, quality, fps });
-    notify(result?.ok ? 'GIF готов: ' + result.fileName : (result?.error || 'Ошибка экспорта'));
+    notify(result?.ok ? 'GIF сохранён в Загрузки: ' + result.fileName : (result?.error || 'Ошибка экспорта'));
   };
 
   return <main className="app">
