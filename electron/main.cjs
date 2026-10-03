@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -23,8 +23,13 @@ ipcMain.handle('export-media', async (_event, payload) => {
   const frames = Array.isArray(payload?.frames) ? payload.frames : [];
   if (!frames.length) return { ok:false, error:'Нет кадров для экспорта' };
   const ext = format.toLowerCase();
-  const picked = await dialog.showSaveDialog({ title:'Экспорт анимации', defaultPath:path.join(app.getPath('downloads'), 'kadr-animation.' + ext), filters:[{name:format, extensions:[ext]}] });
-  if (picked.canceled || !picked.filePath) return { ok:false, error:'Экспорт отменён' };
+  const downloads = app.getPath('downloads');
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  let outputPath = path.join(downloads, `kadr-animation-${stamp}.${ext}`);
+  let suffix = 1;
+  while (fs.existsSync(outputPath)) {
+    outputPath = path.join(downloads, `kadr-animation-${stamp}-${suffix++}.${ext}`);
+  }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kadr-'));
   try {
     const list = [];
@@ -41,11 +46,11 @@ ipcMain.handle('export-media', async (_event, payload) => {
     if (format === 'GIF') {
       const palette = path.join(dir, 'palette.png');
       await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-vf',`fps=${fps},scale=1280:-1:flags=lanczos,palettegen=max_colors=${quality === 'small' ? 128 : 256}:stats_mode=diff`,palette]);
-      await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-i',palette,'-lavfi',`fps=${fps},scale=1280:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=sierra2_4a`,'-loop','0',picked.filePath]);
+      await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-i',palette,'-lavfi',`fps=${fps},scale=1280:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=sierra2_4a`,'-loop','0',outputPath]);
     } else {
       await runFfmpeg(['-y','-f','concat','-safe','0','-i',concat,'-vf','fps=30,format=yuv420p','-movflags','+faststart','-c:v','libx264',picked.filePath]);
     }
-    return { ok:true, fileName:path.basename(picked.filePath) };
+    return { ok:true, fileName:path.basename(outputPath), filePath:outputPath };
   } catch (error) {
     return { ok:false, error:'Ошибка FFmpeg: ' + error.message };
   } finally {
