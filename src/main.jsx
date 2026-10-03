@@ -118,10 +118,9 @@ function App() {
   const undo = () => { if (!history.length) return; const prev = history.at(-1); setFuture(f => [frames, ...f].slice(0, 50)); setHistory(h => h.slice(0, -1)); setFrames(prev); notify('Отменено'); };
   const redo = () => { if (!future.length) return; const next = future[0]; setHistory(h => [...h.slice(-49), frames]); setFuture(f => f.slice(1)); setFrames(next); notify('Повторено'); };
 
-  const replaceSelected = (file) => {
-    if (!selected) return;
-    const url = URL.createObjectURL(file);
-    commit(p => p.map(f => f.id === selected.id ? { ...f, url, name: file.name, type: file.type } : f));
+  const replaceSelected = (item) => {
+    if (!selected || !item) return;
+    commit(p => p.map(f => f.id === selected.id ? { ...f, url: item.url, name: item.name, type: item.type } : f));
     notify('Кадр заменён');
   };
 
