@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Upload, Settings2, Play, Sparkles, ChevronDown, Undo2, Redo2, Plus, Image, Video, SlidersHorizontal, Download, ArrowLeft, ArrowRight, MoreHorizontal, Check, Clock3, WandSparkles } from 'lucide-react';
+import { Upload, Settings2, Play, Sparkles, ChevronDown, Undo2, Redo2, Plus, Image, Video, SlidersHorizontal, Download, ArrowLeft, ArrowRight, MoreHorizontal, Check, Clock3, WandSparkles, Trash2 } from 'lucide-react';
 import './style.css';
 
 const starterFrames = [];
@@ -84,6 +84,8 @@ function App() {
     const id = Date.now();
     changeFrames((previous) => [...previous, { id, label: String(previous.length + 1).padStart(2, '0'), duration: 0.5, tone: 'two' }]);
     setSelected(id);
+    setSelectedIds(new Set([id]));
+    setSelectionAnchor(id);
     notify('Пустой кадр добавлен в конец таймлайна');
   };
 
@@ -121,6 +123,20 @@ function App() {
     const [start, end] = a < b ? [a, b] : [b, a];
     setSelectedIds(new Set(frames.slice(start, end + 1).map((f) => f.id))); setSelected(id);
   };
+  const deleteMediaFile = (file) => {
+    const affectedIds = new Set(frames.filter((frame) => frame.url === file.url).map((frame) => frame.id));
+    if (affectedIds.size) {
+      changeFrames((previous) => previous.filter((frame) => !affectedIds.has(frame.id)));
+      const remaining = frames.filter((frame) => !affectedIds.has(frame.id));
+      const next = remaining[0];
+      setSelected(next?.id);
+      setSelectedIds(next ? new Set([next.id]) : new Set());
+    }
+    setMedia((previous) => previous.filter((item) => item.id !== file.id));
+    URL.revokeObjectURL(file.url);
+    notify('Файл и связанные кадры удалены');
+  };
+
   const replaceSelectedFrame = (file) => {
     if (!selectedFrame || !file) return;
     const url = URL.createObjectURL(file);
@@ -140,7 +156,7 @@ function App() {
   };
   const exportMedia = async () => {
     if (!frames.length) { notify('Добавьте хотя бы один кадр'); return; }
-    if (!window.kadr?.exportMedia) { exportProject(); return; }
+    if (!window.kadr?.exportMedia) { notify('Экспорт доступен в Windows-приложении КАДР Motion Lab'); return; }
     const snapshots = [];
     for (const frame of frames) {
       const canvas = document.createElement('canvas'); canvas.width = 1280; canvas.height = 720;
@@ -170,13 +186,13 @@ function App() {
     <header className="topbar">
       <div className="brand"><span className="brand-mark">K</span><span>КАДР</span><i /><small>новый проект</small></div>
       <nav><button className="nav-active" onClick={() => { setActiveTool("frames"); notify("Режим монтажа"); }}>Монтаж</button><button onClick={() => { setQuality((v) => !v); notify("Плавное движение переключено"); }}>Улучшение</button><button onClick={exportMedia}>Экспорт</button></nav>
-      <div className="head-actions"><button className="icon-btn" title="Отменить" onClick={undo} disabled={!history.length}><Undo2 size={17} /></button><button className="icon-btn" title="Повторить" onClick={redo} disabled={!future.length}><Redo2 size={17} /></button><button className="settings" onClick={() => setSettingsOpen(!settingsOpen)}><Settings2 size={16} /> Настройки</button><button className="export" onClick={exportMedia}><Download size={16} /> Сохранить проект</button></div>
+      <div className="head-actions"><button className="icon-btn" title="Отменить" onClick={undo} disabled={!history.length}><Undo2 size={17} /></button><button className="icon-btn" title="Повторить" onClick={redo} disabled={!future.length}><Redo2 size={17} /></button><button className="settings" onClick={() => setSettingsOpen(!settingsOpen)}><Settings2 size={16} /> Настройки</button><button className="export" onClick={exportMedia}><Download size={16} /> Экспорт</button></div>
     </header>
     <section className="workspace">
       <aside className="left-panel">
         <div className="panel-title"><span>Медиа</span><button onClick={() => picker.current.click()}><Plus size={18} /></button></div>
         <button className="dropzone" onClick={() => picker.current.click()} onDragOver={(event) => event.preventDefault()} onDrop={addFiles}><Upload size={22} /><b>Добавить файлы</b><span>Нажмите или перетащите PNG, JPG, GIF, MP4</span></button>
-        {media.length === 0 ? <div className="empty-media"><Image size={17} /><span>Здесь появятся ваши файлы</span></div> : media.map((file) => <div className="media-list" key={file.id} onClick={() => replaceSelectedFrame(file)}><div className="media-thumb custom" style={file.type.startsWith('image/') ? { backgroundImage: `url(${file.url})` } : {}}>{file.type.startsWith('video') && <Video size={15} />}</div><div className="media-name"><b>{file.name}</b><small>{file.type.startsWith('video') ? 'Видео для улучшения' : 'Добавлено на таймлайн'}</small></div><button className="more" onClick={(event) => { event.stopPropagation(); notify(file.name); }}><MoreHorizontal size={18} /></button></div>)}
+        {media.length === 0 ? <div className="empty-media"><Image size={17} /><span>Здесь появятся ваши файлы</span></div> : media.map((file) => <div className="media-list" key={file.id} onClick={() => replaceSelectedFrame(file)}><div className="media-thumb custom" style={file.type.startsWith('image/') ? { backgroundImage: `url(${file.url})` } : {}}>{file.type.startsWith('video') && <Video size={15} />}</div><div className="media-name"><b>{file.name}</b><small>{file.type.startsWith('video') ? 'Видео для улучшения' : 'Добавлено на таймлайн'}</small></div><button className="more" title="Удалить файл" onClick={(event) => { event.stopPropagation(); deleteMediaFile(file); }}><Trash2 size={16} /></button></div>)}
         <div className="source-note"><Sparkles size={14} /><span>Исходники сохраняются<br />без изменений</span></div>
       </aside>
       <section className="editor">
